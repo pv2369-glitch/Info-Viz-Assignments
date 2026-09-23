@@ -1,0 +1,78 @@
+\documentclass[conference]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{siunitx}
+\usepackage{stfloats}  % lets a two-column figure sit at the bottom of the current page
+\IEEEoverridecommandlockouts
+
+\begin{document}
+
+\title{Cleaning a Corrupted Temperature Anomaly Dataset}
+
+\author{\IEEEauthorblockN{Pranav Vaithiya Subramani}
+\IEEEauthorblockA{New York University, pv2369@nyu.edu}}
+
+\maketitle
+
+\begin{figure*}[!b]
+\centering
+\includegraphics[width=7.16in]{anomaly_chart.png}
+\caption{Cleaned monthly global temperature anomaly, 1880--2025. Position encodes the anomaly in \si{\celsius}; segment color encodes $d=x-\mu_{20}$ on a diverging scale centered at the 1901--2000 mean.}
+\label{fig:chart}
+\end{figure*}
+
+\section{Introduction}
+The file \texttt{global\_temp\_dirty\_v2.csv} holds corrupted monthly global temperature anomalies (\si{\celsius}, relative to the 1901--2000 mean) for January 1880 to December 2025. This report shows the counts produced by the code \texttt{clean.py}, the normalization applied, and the five warmest years. Fig.~\ref{fig:chart} shows the cleaned series.
+
+\section{Data Cleaning Summary}
+\textbf{Load and standardize dates}
+All fields were read as text and header names stripped. Of 1711 lines after the header, 4 non-data lines were discarded, 32 rows with swapped columns were fixed. Ten date patterns were matched by explicit regular expressions (two-digit years: 26--99$\rightarrow$19xx, 00--25$\rightarrow$20xx).
+
+\textbf{Parse values}
+34 comma-decimal and 45\si{\celsius}-suffixed values were converted to \texttt{float}; 63 missing-value tokens became \texttt{NaN}.
+
+\textbf{Deduplicate and sort}
+After chronological sorting, 20 duplicate rows were removed, leaving 1687 unique months.
+
+\textbf{Remove outliers with the IQR method}
+Of the 1625 non-missing values, $Q_1=-0.385$, $Q_3=0.49$, $\mathrm{IQR}=0.875$, so the fences are $[-1.6975, 1.8025]$~\si{\celsius}. Exactly 63 values fell outside: and they were set to \texttt{NaN}.
+
+\textbf{Impute missing months}
+On the full 1752 month grid the 65 absent months, the missing tokens and the removed outliers gave 190 gaps, all filled by linear interpolation in time.
+
+\section{Normalization}
+From the cleaned monthly series $x$ two quantities were computed:
+\begin{equation}
+d = x - \mu_{20}, \label{eq:d}
+\end{equation}
+\begin{equation}
+z = (x - \mu)/\sigma, \label{eq:z}
+\end{equation}
+where $x$ is the cleaned monthly anomaly (\si{\celsius}), $d$ is its departure from the 20th-century mean $\mu_{20}$ (the mean of the cleaned series over 1901--2000), and $z$ is its standardized score, $\mu$ and $\sigma$ being the mean and sample standard deviation over 1880--2025. Here $\mu_{20}=0.0002$\si{\celsius} (near zero, as expected for a 1901--2000 baseline), $\mu=0.464$\si{\celsius} and $\sigma=0.5199$\si{\celsius}. Eq.~\eqref{eq:d} drives the color of Fig.~\ref{fig:chart}; Eq.~\eqref{eq:z} is averaged by year in Table~\ref{tab:top5}.
+
+\section{Warmest Years}
+Calendar-year means of $x$ and $z$ give the five warmest years in Table~\ref{tab:top5}. 2024 and 2023 lie more than $2\sigma$ above the long-run mean.
+
+Fig.~\ref{fig:chart} draws the series as a \texttt{LineCollection} whose segments are colored by $d$: blue below the 20th-century mean, red above.
+
+\begin{table}[!htbp]
+\caption{Five warmest calendar years in the cleaned series.}
+\label{tab:top5}
+\centering
+\begin{tabular}{@{}cccc@{}}
+\toprule
+Rank & Year & Mean anomaly (\si{\celsius}) & Mean $z$ \\
+\midrule
+1 & 2024 & +1.168 & +2.157 \\
+2 & 2023 & +1.153 & +2.129 \\
+3 & 2025 & +1.013 & +1.858 \\
+4 & 2016 & +0.982 & +1.799 \\
+5 & 2022 & +0.960 & +1.758 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
