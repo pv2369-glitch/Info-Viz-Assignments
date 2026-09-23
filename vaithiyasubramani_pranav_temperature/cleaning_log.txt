@@ -1,0 +1,86 @@
+Cleaning Log:
+Header (cleaned): ['Date', 'Temperature_Anomaly', 'Source/Notes']
+Lines after header: 1711
+
+Non-data lines discarded: 4
+	line 1709: ,,
+	line 1710: END OF DATA,,
+	line 1711: ,,
+	line 1712: Source: SIMULATED teaching dataset (not official NOAA/NASA/HadCRUT values). Anomaly baseline: 1901-2000 mean.,,
+
+Rows with swapped fields fixed: 32
+	line 159: -0.533,Jul 1893,
+	line 184: -0.698,1898-06-01,
+	line 226: -0.593,1901/10,
+	line 277: -0.391,  1903/09 ,
+	line 298: -0.489,1906/06,
+	line 309: -0.479,Jul-1907,
+	line 334: -0.55,1908 Sep,
+	line 373: -0.646,Nov-1911,
+	line 432: -0.589,1916/11,
+	line 655: -0.183,Feb-36,
+	line 693: NA,1937/10,
+	line 735: -0.066,Jan-43,
+	line 783: -0.062,Feb-47,
+	line 847: 0.064,1953/08,
+	line 947: 0.09,1961.03,
+	line 969: 0.248,Jan-63,
+	line 971: 0.104,Mar-63,
+	line 1007: 0.116,Aug-65,
+	line 1031: -0.042,6/1/68,
+	line 1126: 0.442,1976.03,
+	line 1217: 0.28,Feb-84,
+	line 1291: 0.554,Dec-90,
+	line 1335: 0.571,1996/03,
+	line 1389: 0.704,1997 Oct,
+	line 1451: 0.692,2003/10,
+	line 1452: 0.512,Nov-03,
+	line 1476: 0.64,Jan-06,
+	line 1492: 0.73,7/1/07,
+	line 1519: 0.832,Nov-09,
+	line 1601: 0.96,2016/09,
+	line 1664: 1.032,Mar-22,
+	line 1665: 1.138,Apr-22,
+Rows that could not be parsed : 0
+Rows parsed: 1707
+All rows parsed successfully
+
+Values with comma decimal: 34
+Values with °C suffix: 45
+Missing-value tokens to NaN: 63
+sensor codes (±500/±999): 63
+Out-of-order rows: 287
+Duplicate rows removed: 20
+No month had two different non-missing values.
+Unique months present: 1687
+
+IQR outlier removal on deduplicated non-missing values:
+	n non-missing = 1625
+	Q1 = -0.3850  Q3 = 0.4900  IQR = 0.8750
+	lower fence = -1.6975  upper fence = 1.8025
+	values removed = 63
+	removed value counts: {-999.0: 9, -500.0: 10, 500.0: 35, 999.0: 9}
+	every ±500/±999 code removed : True
+	no plausible reading removed : True 
+
+All sensor codes removed
+All missing values imputed
+
+Imputation:
+	months on grid 1880-01 to 2025-12 : 1752
+	months with no row at all: 65
+	months with missing token: 62
+	months removed as outliers: 63
+	total months imputed (linear interpolation): 190
+
+Normalization:
+	mu_20 (1901-2000 mean) = +0.0002 °C
+	mu (1880-2025 mean) = +0.0464 °C
+	sigma (1880-2025 standard deviation) = 0.5199 °C
+
+Five Warmest Years:
+	1. 2024: mean anomaly +1.168 °C, mean z +2.157
+	2. 2023: mean anomaly +1.153 °C, mean z +2.129
+	3. 2025: mean anomaly +1.013 °C, mean z +1.858
+	4. 2016: mean anomaly +0.982 °C, mean z +1.799
+	5. 2022: mean anomaly +0.960 °C, mean z +1.758
