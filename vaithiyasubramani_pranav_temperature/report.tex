@@ -51,7 +51,7 @@ d = x - \mu_{20}, \label{eq:d}
 \begin{equation}
 z = (x - \mu)/\sigma, \label{eq:z}
 \end{equation}
-where $x$ is the cleaned monthly anomaly (\si{\celsius}), $d$ is its departure from the 20th-century mean $\mu_{20}$ (the mean of the cleaned series over 1901--2000), and $z$ is its standardized score, $\mu$ and $\sigma$ being the mean and sample standard deviation over 1880--2025. Here $\mu_{20}=0.0002$\si{\celsius} (near zero, as expected for a 1901--2000 baseline), $\mu=0.464$\si{\celsius} and $\sigma=0.5199$\si{\celsius}. Eq.~\eqref{eq:d} drives the color of Fig.~\ref{fig:chart}; Eq.~\eqref{eq:z} is averaged by year in Table~\ref{tab:top5}.
+where $x$ is the cleaned monthly anomaly (\si{\celsius}), $d$ is its departure from the 20th-century mean $\mu_{20}$ (the mean of the cleaned series over 1901--2000), and $z$ is its standardized score, $\mu$ and $\sigma$ being the mean and sample standard deviation over 1880--2025. Here $\mu_{20}=0.0002$\si{\celsius} (near zero, as expected for a 1901--2000 baseline), $\mu=0.464$\si{\celsius} and $\sigma=0.5199$\si{\celsius}.
 
 \section{Warmest Years}
 Calendar-year means of $x$ and $z$ give the five warmest years in Table~\ref{tab:top5}. 2024 and 2023 lie more than $2\sigma$ above the long-run mean.
@@ -74,5 +74,9 @@ Rank & Year & Mean anomaly (\si{\celsius}) & Mean $z$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\textbf{Note:} AI was used to evaluate and improve the regex patterns required for parsing various date formats and values. It was also used to verify compliance with the required IEEE latex format.
+
+\texttt{pdflatex report.tex} command was tested and verified but there is noted limitation that the command needs to be run twice to produce the numbering of the figures and tables referenced by the text.
 
 \end{document}

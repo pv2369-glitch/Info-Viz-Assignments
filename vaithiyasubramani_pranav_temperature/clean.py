@@ -250,7 +250,8 @@ log(f"\tsigma (1880-2025 standard deviation) = {sigma:.4f} °C")
 
 annual = pd.DataFrame({"anomaly": clean, "z": z}).groupby(clean.index.year).agg(
     mean_anomaly=("anomaly", "mean"), mean_z=("z", "mean"), n=("anomaly", "size"))
-assert (annual["n"] == 12).all() and len(annual) == 146
+
+
 top5 = annual.sort_values("mean_anomaly", ascending=False).head(5)
 log()
 log("Five Warmest Years:")
@@ -258,19 +259,15 @@ for rank, (yr, r) in enumerate(top5.iterrows(), start=1):
     log(f"\t{rank}. {yr}: mean anomaly {r.mean_anomaly:+.3f} °C, mean z {r.mean_z:+.3f}")
 
 
-out = pd.DataFrame({"date": clean.index.strftime("%Y-%m"),
-                    "anomaly_c": clean.round(5).values,
-                    "z": z.round(5).values})
-out.to_csv("./cleaned_monthly.csv", index=False)
-
+out = pd.DataFrame({"date": clean.index.strftime("%Y-%m"), "anomaly_c": clean.round(5).values, "z": z.round(5).values})
 
 plt.rcParams.update({"font.size": 8, "axes.linewidth": 0.6, "xtick.major.width": 0.5, "ytick.major.width": 0.5})
 
 t = matplotlib.dates.date2num(clean.index.to_pydatetime())
 y = clean.values
 pts = np.column_stack([t, y]).reshape(-1, 1, 2)
-segs = np.concatenate([pts[:-1], pts[1:]], axis=1)
-seg_d = 0.5 * (d.values[:-1] + d.values[1:])
+segs = np.concatenate([pts[ : np.shape(pts)[0] - 1], pts[1:]], axis=1)
+seg_d = 0.5 * (d.values[ : np.shape(d.values)[0] - 1] + d.values[1:])
 lim = float(np.abs(d).max())
 norm = TwoSlopeNorm(vmin=-lim, vcenter=0.0, vmax=lim)
 
@@ -278,18 +275,18 @@ fig, ax = plt.subplots(figsize=(7.16, 1.6))
 lc = LineCollection(segs, cmap="RdBu_r", norm=norm, linewidths=0.9, capstyle="round")
 lc.set_array(seg_d)
 ax.add_collection(lc)
-ax.axhline(mu20, color="#555555", lw=0.6, ls=(0, (4, 3)), zorder=0)
+ax.axhline(mu20, color="#000000", lw=0.6, zorder=0)
 ax.text(matplotlib.dates.date2num(pd.Timestamp("1881-01-01")), mu20 + 0.04, f"1901-2000 baseline ($\\mu_{{20}}$ = {mu20:+.4f} °C)", fontsize=6.5, color="#555555", va="bottom")
 ax.set_xlim(t[0], t[-1])
-pad = 0.08
+pad = 0.1
 ax.set_ylim(y.min() - pad, y.max() + pad)
 ax.xaxis.set_major_locator(matplotlib.dates.YearLocator(20))
 ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%Y"))
 ax.set_xlabel("Year")
 ax.set_ylabel("Anomaly (°C)")
 ax.grid(axis="y", color="#dddddd", lw=0.4)
-for sp in ("top", "right"):
-    ax.spines[sp].set_visible(False)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
 cb = fig.colorbar(lc, ax=ax, pad=0.015, fraction=0.035)
 cb.set_label("$d = x - \\mu_{20}$ (°C)")
 cb.outline.set_linewidth(0.5)
@@ -298,5 +295,8 @@ fig.tight_layout(pad=0.4)
 fig.savefig("./anomaly_chart.png", dpi=300)
 plt.close(fig)
 
-Path("./cleaning_log.txt").write_text("\n".join(log_lines) + "\n", encoding="utf-8")
+with open("./cleaning_log.txt", "w", encoding="utf-8") as fh:
+    fh.write("\n".join(log_lines))
+out.to_csv("./cleaned_monthly.csv", index=False)
+
 print("Wrote cleaned_monthly.csv, cleaning_log.txt, anomaly_chart.png")

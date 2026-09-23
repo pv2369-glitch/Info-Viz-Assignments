@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  23 SEP 2026 15:08
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2025) (preloaded format=pdflatex 2025.3.8)  23 SEP 2026 16:04
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -417,11 +417,11 @@ L3 programming layer <2025-01-18>
 Here is how much of TeX's memory you used:
  7836 strings out of 473190
  184286 string characters out of 5715801
- 553770 words of memory out of 5000000
+ 554770 words of memory out of 5000000
  31032 multiletter control sequences out of 15000+600000
  665268 words of font info for 136 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 73i,11n,80p,599b,758s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 73i,11n,80p,478b,758s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb
 ></usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb><
 /usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></u
@@ -435,7 +435,7 @@ ve/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive
 /2025/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/local/texlive/2025/te
 xmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/local/texlive/2025/texmf-dist/f
 onts/type1/urw/times/utmr8a.pfb>
-Output written on report.pdf (1 page, 261570 bytes).
+Output written on report.pdf (1 page, 261520 bytes).
 PDF statistics:
  77 PDF objects out of 1000 (max. 8388607)
  45 compressed objects within 1 object stream
