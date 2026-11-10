@@ -109,6 +109,17 @@ h1 {
   cursor: pointer;
 }
 
+.chip-unknown {
+  margin-left: 6px;
+  border-style: dashed;
+  color: var(--ink-soft);
+}
+
+.chip-note {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
 .chip[aria-pressed="true"] {
   border-color: var(--accent);
   background: var(--accent);
@@ -128,9 +139,15 @@ h1 {
   cursor: pointer;
 }
 
-.reset:hover,
+.reset:hover:not(:disabled),
 .chip:hover {
   border-color: var(--accent);
+}
+
+.reset:disabled {
+  border-color: var(--line);
+  color: var(--neutral);
+  cursor: default;
 }
 
 .kpis {

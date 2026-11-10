@@ -1,5 +1,9 @@
 import { loadData } from "./data.js";
 import { FORMAT } from "./config.js";
+import { initState, onChange, totals, grandTotals, isFiltered, clearAll } from "./state.js";
+import { initChips } from "./chips.js";
+import { renderSubtitle } from "./subtitle.js";
+import { initTimeline, updateTimeline } from "./views/timeline.js";
 
 function setKpi(id, value, note) {
   const card = d3.select(`#${id}`);
@@ -7,21 +11,45 @@ function setKpi(id, value, note) {
   card.select(".kpi-note").text(note ?? "");
 }
 
+function unknownShare(strikes, field, labels, unknown) {
+  const code = labels.indexOf(unknown);
+  const missing = d3.sum(strikes, (d) => (d[field] === code ? d.n : 0));
+  return missing / d3.sum(strikes, (d) => d.n);
+}
+
+function renderKpis(t, grand, nGroups) {
+  const pct = t.knownDamage > 0 ? FORMAT.pct(t.damaging / t.knownDamage) : "–";
+  const share = isFiltered() ? `${FORMAT.pct(t.strikes / grand.strikes)} of all strikes` : "";
+  const coverage = t.strikes > 0 ? ` (${FORMAT.pct(t.costReports / t.strikes)} of strikes)` : "";
+
+  setKpi("kpi-strikes", FORMAT.count(t.strikes), share);
+  setKpi("kpi-damaging", pct, `of ${FORMAT.count(t.knownDamage)} with known damage`);
+  setKpi("kpi-cost", FORMAT.money(t.cost), `from ${FORMAT.count(t.costReports)} reports${coverage}`);
+  setKpi("kpi-species", t.groupsPresent, `of ${nGroups}`);
+}
+
 async function main() {
   const data = await loadData();
-  const rows = data.strikes;
+  const { lookups } = data;
+  const nGroups = lookups.species.length;
 
-  const strikes = d3.sum(rows, (d) => d.n);
-  const damaging = d3.sum(rows, (d) => d.damagingN);
-  const knownDamage = d3.sum(rows, (d) => d.knownDamageN);
-  const cost = d3.sum(rows, (d) => d.c);
-  const costReports = d3.sum(rows, (d) => d.cn);
-  const groupsPresent = new Set(rows.map((d) => d.g)).size;
+  initState(data.strikes, lookups);
+  const { strikes } = data;
+  initChips("chips-time", lookups.time, "time", lookups.unknown, unknownShare(strikes, "t", lookups.time, lookups.unknown));
+  initChips("chips-size", lookups.size, "size", lookups.unknown, unknownShare(strikes, "s", lookups.size, lookups.unknown));
+  d3.select("#reset").on("click", clearAll);
+  initTimeline("#chart-timeline", lookups, data.strikes);
 
-  setKpi("kpi-strikes", FORMAT.count(strikes));
-  setKpi("kpi-damaging", FORMAT.pct(damaging / knownDamage), `of ${FORMAT.count(knownDamage)} with known damage`);
-  setKpi("kpi-cost", FORMAT.money(cost), `from ${FORMAT.count(costReports)} reports`);
-  setKpi("kpi-species", groupsPresent, `of ${data.lookups.species.length}`);
+  const render = () => {
+    const t = totals();
+    const grand = grandTotals();
+    renderKpis(t, grand, nGroups);
+    renderSubtitle(lookups, t, grand);
+    d3.select("#reset").property("disabled", !isFiltered());
+    updateTimeline();
+  };
+  onChange(render);
+  render();
 }
 
 main();

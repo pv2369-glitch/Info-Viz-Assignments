@@ -22,10 +22,12 @@
         <div class="chip-row">
           <span class="chip-label">Time</span>
           <div class="chips" id="chips-time"></div>
+          <span class="chip-note" id="chips-time-note"></span>
         </div>
         <div class="chip-row">
           <span class="chip-label">Animal size</span>
           <div class="chips" id="chips-size"></div>
+          <span class="chip-note" id="chips-size-note"></span>
         </div>
       </div>
       <button type="button" id="reset" class="reset">Reset</button>
@@ -35,6 +37,7 @@
       <div class="kpi" id="kpi-strikes">
         <span class="kpi-label">Strikes in selection</span>
         <span class="kpi-value">–</span>
+        <span class="kpi-note"></span>
       </div>
       <div class="kpi" id="kpi-damaging">
         <span class="kpi-label">% damaging</span>
@@ -79,7 +82,7 @@
     </section>
 
     <section class="panel timeline-panel" id="v4">
-      <h2 class="panel-title">Strikes per month</h2>
+      <h2 class="panel-title">Strikes over time</h2>
       <div class="chart" id="chart-timeline"></div>
     </section>
 
