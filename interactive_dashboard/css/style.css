@@ -221,6 +221,32 @@ h1 {
   font-weight: 600;
 }
 
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.key {
+  display: flex;
+  gap: 12px;
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.key-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.key-swatch {
+  width: 10px;
+  height: 10px;
+  border: 1px solid;
+}
+
 .chart {
   position: relative;
   flex: 1;
@@ -276,7 +302,7 @@ h1 {
 .tooltip {
   position: fixed;
   z-index: 10;
-  max-width: 260px;
+  max-width: 320px;
   padding: 6px 9px;
   border: 1px solid var(--line);
   border-radius: var(--radius);

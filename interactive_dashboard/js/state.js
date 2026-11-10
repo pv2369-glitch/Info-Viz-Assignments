@@ -38,6 +38,19 @@ function makeReducers(nGroups, heightBand) {
   return [add, remove, init];
 }
 
+function makeCountReducers() {
+  const change = (p, d, sign) => {
+    p.strikes += sign * d.n;
+    p.damaging += sign * d.damagingN;
+    p.known += sign * d.knownDamageN;
+    return p;
+  };
+  const add = (p, d) => change(p, d, 1);
+  const remove = (p, d) => change(p, d, -1);
+  const init = () => ({ strikes: 0, damaging: 0, known: 0 });
+  return [add, remove, init];
+}
+
 function notify() {
   listeners.forEach((fn) => fn());
 }
@@ -52,9 +65,10 @@ export function initState(strikes, lookups) {
   dims.time = cf.dimension((d) => d.t);
   dims.size = cf.dimension((d) => d.s);
   dims.year = cf.dimension((d) => d.y);
-  groups.year = dims.year.group().reduceSum((d) => d.n);
   dims.monthOfYear = cf.dimension((d) => d.mo);
-  groups.monthOfYear = dims.monthOfYear.group().reduceSum((d) => d.n);
+  Object.keys(dims).forEach((name) => {
+    groups[name] = dims[name].group().reduce(...makeCountReducers());
+  });
   all = cf.groupAll().reduce(...makeReducers(lookups.species.length, heightBand));
   grand = totals();
 }
@@ -95,12 +109,12 @@ export function grandTotals() {
   return grand;
 }
 
-export function yearCounts() {
-  return groups.year.all();
-}
-
-export function monthOfYearCounts() {
-  return groups.monthOfYear.all();
+export function groupCounts(name, length) {
+  const counts = Array.from({ length }, () => ({ strikes: 0, damaging: 0, known: 0 }));
+  groups[name].all().forEach(({ key, value }) => {
+    counts[key] = value;
+  });
+  return counts;
 }
 
 export function onChange(fn) {

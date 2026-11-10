@@ -1,5 +1,6 @@
 import { FORMAT, NOT_RECORDED } from "./config.js";
-import { filterSet, getSelection, onChange } from "./state.js";
+import { filterSet, getSelection, onChange, groupCounts } from "./state.js";
+import { showTooltip, moveTooltip, hideTooltip, damageLine } from "./tooltip.js";
 
 export function initChips(containerId, labels, dimension, unknownLabel, missingShare) {
   const options = labels.map((label, code) => ({
@@ -23,7 +24,13 @@ export function initChips(containerId, labels, dimension, unknownLabel, missingS
         selected.add(o.code);
       }
       filterSet(dimension, [...selected]);
-    });
+    })
+    .on("mouseenter", (event, o) => {
+      const v = groupCounts(dimension, labels.length)[o.code];
+      showTooltip(`<strong>${o.text}</strong><br>${FORMAT.count(v.strikes)} strikes<br>${damageLine(v)}`, event);
+    })
+    .on("mousemove", moveTooltip)
+    .on("mouseleave", hideTooltip);
 
   d3.select(`#${containerId}-note`).text(`${FORMAT.share(missingShare)} not recorded`);
 

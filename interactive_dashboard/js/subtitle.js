@@ -1,9 +1,13 @@
 import { FORMAT, HEIGHT_SPLIT_LABEL, MIN_KNOWN_DAMAGE } from "./config.js";
 import { getSelection } from "./state.js";
 
+const yearRange = (labels) => (labels.length > 1 ? `${labels[0]}–${labels[labels.length - 1]}` : labels[0]);
+
 const DESCRIBERS = {
-  time: { format: (labels) => labels.join(" or "), missing: "time not recorded" },
-  size: { format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
+  year: { labels: "years", format: yearRange },
+  monthOfYear: { labels: "monthNames", format: (labels) => labels.join(", ") },
+  time: { labels: "time", format: (labels) => labels.join(" or "), missing: "time not recorded" },
+  size: { labels: "size", format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
 };
 
 function describe(spec, labels, unknown) {
@@ -18,7 +22,7 @@ function describeSelection(lookups) {
   return Object.entries(DESCRIBERS)
     .map(([name, spec]) => {
       const codes = [...getSelection(name)].sort((a, b) => a - b);
-      return codes.length ? describe(spec, codes.map((c) => lookups[name][c]), lookups.unknown) : null;
+      return codes.length ? describe(spec, codes.map((c) => lookups[spec.labels][c]), lookups.unknown) : null;
     })
     .filter(Boolean);
 }
