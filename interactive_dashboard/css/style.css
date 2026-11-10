@@ -1,0 +1,272 @@
+:root {
+  --ink: #222222;
+  --ink-soft: #555555;
+  --line: #cccccc;
+  --bg: #ffffff;
+  --panel-bg: #ffffff;
+  --envelope-bg: #f7f7f7;
+  --neutral: #888888;
+  --accent: #2166ac;
+  --dmg-1: #fee6ce;
+  --dmg-2: #fdae6b;
+  --dmg-3: #e6550d;
+  --dmg-4: #7f2704;
+  --gap: 12px;
+  --radius: 4px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 13px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  grid-template-rows: auto auto auto minmax(0, 1.65fr) minmax(0, 1fr);
+  grid-template-areas:
+    "top top"
+    "kpil kpir"
+    "legl legr"
+    "map env"
+    "time species";
+  gap: 8px var(--gap);
+  height: 100vh;
+  min-height: 760px;
+  min-width: 1200px;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 16px 14px;
+}
+
+.top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 0 10px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.titles {
+  flex: 1;
+  min-width: 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.subtitle {
+  margin: 4px 0 0;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.chip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chip-label {
+  width: 78px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+}
+
+.chip {
+  padding: 3px 12px;
+  border: 1px solid var(--neutral);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.reset {
+  padding: 8px 18px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.reset:hover,
+.chip:hover {
+  border-color: var(--accent);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap);
+}
+
+.kpis-left {
+  grid-area: kpil;
+}
+
+.kpis-right {
+  grid-area: kpir;
+}
+
+.kpi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.kpi-label {
+  flex-basis: 100%;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.kpi-note {
+  color: var(--ink-soft);
+  font-size: 11px;
+}
+
+.legend {
+  min-height: 18px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.legend-left {
+  grid-area: legl;
+}
+
+.legend-right {
+  grid-area: legr;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--panel-bg);
+}
+
+.panel-title {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.chart {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.map-panel {
+  grid-area: map;
+}
+
+.envelope {
+  grid-area: env;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 6px 10px 10px;
+  border: 1.5px dashed var(--neutral);
+  border-radius: var(--radius);
+  background: var(--envelope-bg);
+}
+
+.envelope-label {
+  margin-bottom: 6px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.envelope-views {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.timeline-panel {
+  grid-area: time;
+}
+
+.species-panel {
+  grid-area: species;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 10;
+  max-width: 260px;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.4;
+  pointer-events: none;
+}
