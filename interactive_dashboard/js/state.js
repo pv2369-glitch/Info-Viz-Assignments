@@ -3,6 +3,7 @@ import { LOW_HEIGHT_BINS } from "./config.js";
 let cf;
 let all;
 let grand;
+let nDamage;
 const dims = {};
 const groups = {};
 const selections = {};
@@ -38,17 +39,21 @@ function makeReducers(nGroups, heightBand) {
   return [add, remove, init];
 }
 
+function emptyCounts() {
+  return { strikes: 0, damaging: 0, known: 0, byDamage: new Array(nDamage).fill(0) };
+}
+
 function makeCountReducers() {
   const change = (p, d, sign) => {
     p.strikes += sign * d.n;
     p.damaging += sign * d.damagingN;
     p.known += sign * d.knownDamageN;
+    p.byDamage[d.d] += sign * d.n;
     return p;
   };
   const add = (p, d) => change(p, d, 1);
   const remove = (p, d) => change(p, d, -1);
-  const init = () => ({ strikes: 0, damaging: 0, known: 0 });
-  return [add, remove, init];
+  return [add, remove, emptyCounts];
 }
 
 function notify() {
@@ -61,7 +66,10 @@ export function initState(strikes, lookups) {
     return LOW_HEIGHT_BINS.includes(label) ? "low" : "high";
   });
 
+  nDamage = lookups.damage.length;
   cf = crossfilter(strikes);
+  dims.height = cf.dimension((d) => d.h);
+  dims.phase = cf.dimension((d) => d.p);
   dims.time = cf.dimension((d) => d.t);
   dims.size = cf.dimension((d) => d.s);
   dims.year = cf.dimension((d) => d.y);
@@ -92,6 +100,10 @@ export function isFiltered() {
   return Object.values(selections).some((codes) => codes.length > 0);
 }
 
+export function isFilteredExcept(name) {
+  return Object.entries(selections).some(([other, codes]) => other !== name && codes.length > 0);
+}
+
 export function clearAll() {
   Object.keys(selections).forEach((name) => {
     selections[name] = [];
@@ -110,7 +122,7 @@ export function grandTotals() {
 }
 
 export function groupCounts(name, length) {
-  const counts = Array.from({ length }, () => ({ strikes: 0, damaging: 0, known: 0 }));
+  const counts = Array.from({ length }, emptyCounts);
   groups[name].all().forEach(({ key, value }) => {
     counts[key] = value;
   });

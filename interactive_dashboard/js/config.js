@@ -12,18 +12,11 @@ export const COLORS = {
   outline: "#888888",
   unknown: "#d9d9d9",
   context: "#e3e3e3",
+  line: "#cccccc",
+  damage: "#e6550d",
 };
 
 export const DAMAGE_RAMP = ["#fee6ce", "#fdae6b", "#e6550d", "#7f2704"];
-
-export const DAMAGE_COLORS = {
-  N: DAMAGE_RAMP[0],
-  M: DAMAGE_RAMP[1],
-  "M?": DAMAGE_RAMP[1],
-  S: DAMAGE_RAMP[2],
-  D: DAMAGE_RAMP[3],
-  Unknown: COLORS.unknown,
-};
 
 export const TRANSITION_MS = 300;
 

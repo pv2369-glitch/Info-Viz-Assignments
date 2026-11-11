@@ -1,9 +1,14 @@
 import { loadData } from "./data.js";
 import { FORMAT } from "./config.js";
-import { initState, onChange, totals, grandTotals, isFiltered, clearAll } from "./state.js";
+import { initState, onChange, totals, grandTotals, isFiltered, clearAll, getSelection } from "./state.js";
 import { initChips } from "./chips.js";
 import { renderSubtitle } from "./subtitle.js";
 import { initTimeline, updateTimeline } from "./views/timeline.js";
+import { initHeight, updateHeight } from "./views/height.js";
+import { initPhase } from "./views/phase.js";
+import { updateRowCharts } from "./views/rowChart.js";
+import { renderRowLegend } from "./legend.js";
+import { renderKey } from "./key.js";
 
 function setKpi(id, value, note) {
   const card = d3.select(`#${id}`);
@@ -38,7 +43,10 @@ async function main() {
   initChips("chips-time", lookups.time, "time", lookups.unknown, unknownShare(strikes, "t", lookups.time, lookups.unknown));
   initChips("chips-size", lookups.size, "size", lookups.unknown, unknownShare(strikes, "s", lookups.size, lookups.unknown));
   d3.select("#reset").on("click", clearAll);
+  initHeight("#chart-height", lookups, data.strikes);
+  initPhase("#chart-phase", lookups, data.strikes);
   initTimeline("#chart-timeline", lookups, data.strikes);
+  renderRowLegend("#legend-damage");
 
   const render = () => {
     const t = totals();
@@ -47,6 +55,9 @@ async function main() {
     renderSubtitle(lookups, t, grand);
     d3.select("#reset").property("disabled", !isFiltered());
     updateTimeline();
+    updateRowCharts();
+    updateHeight();
+    renderKey("#key-envelope", ["height", "phase"].some((name) => getSelection(name).length > 0));
   };
   onChange(render);
   render();

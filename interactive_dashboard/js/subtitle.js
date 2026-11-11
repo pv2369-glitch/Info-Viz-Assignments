@@ -3,9 +3,16 @@ import { getSelection } from "./state.js";
 
 const yearRange = (labels) => (labels.length > 1 ? `${labels[0]}–${labels[labels.length - 1]}` : labels[0]);
 
+const heightRange = (labels) => {
+  const pretty = labels.map((label) => label.replace("-", "–"));
+  return pretty.length > 1 ? `${pretty[0]} to ${pretty[pretty.length - 1]} ft` : `${pretty[0]} ft`;
+};
+
 const DESCRIBERS = {
   year: { labels: "years", format: yearRange },
   monthOfYear: { labels: "monthNames", format: (labels) => labels.join(", ") },
+  height: { labels: "height", format: heightRange, missing: "height not recorded" },
+  phase: { labels: "phase", format: (labels) => labels.join(" or "), missing: "phase not recorded" },
   time: { labels: "time", format: (labels) => labels.join(" or "), missing: "time not recorded" },
   size: { labels: "size", format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
 };
@@ -38,12 +45,14 @@ function claimText(t) {
   return `In this selection, higher strikes are not more damaging: ${numbers}.`;
 }
 
+const capitalise = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
 export function renderSubtitle(lookups, t, grand) {
   const parts = describeSelection(lookups);
   const firstYear = lookups.months[0].slice(0, 4);
   const lastYear = lookups.months[lookups.months.length - 1].slice(0, 4);
   const scope = parts.length
-    ? `${parts.join(" · ")}: ${FORMAT.count(t.strikes)} of ${FORMAT.count(grand.strikes)} strikes`
+    ? `${capitalise(parts.join(" · "))}: ${FORMAT.count(t.strikes)} of ${FORMAT.count(grand.strikes)} strikes`
     : `All ${FORMAT.count(grand.strikes)} strikes at US airports, ${firstYear}–${lastYear}`;
   d3.select("#subtitle").text(`${scope}. ${claimText(t)}`);
 }

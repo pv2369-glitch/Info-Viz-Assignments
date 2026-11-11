@@ -1,16 +1,17 @@
 import { COLORS, FORMAT, TRANSITION_MS } from "../config.js";
-import { groupCounts, isFiltered, filterSet, getSelection } from "../state.js";
+import { groupCounts, isFilteredExcept, filterSet, getSelection } from "../state.js";
 import { showTooltip, hideTooltip, damageLine } from "../tooltip.js";
+import { renderKey, barFill } from "../key.js";
 
 const MARGIN = { top: 20, right: 10, bottom: 20, left: 38 };
 const YEAR_SHARE = 0.6;
 const charts = {};
 
-function tooltipHtml(label, all, selected) {
+function tooltipHtml(name, label, all, selected) {
   const lines = [`<strong>${label}</strong>`, `${FORMAT.count(all)} strikes`];
-  if (isFiltered()) {
+  if (isFilteredExcept(name)) {
     const share = all > 0 ? selected.strikes / all : 0;
-    lines.push(`${FORMAT.count(selected.strikes)} in selection (${FORMAT.pct(share)})`);
+    lines.push(`${FORMAT.count(selected.strikes)} match the other filters (${FORMAT.pct(share)})`);
   }
   lines.push(damageLine(selected));
   return lines.join("<br>");
@@ -85,7 +86,7 @@ function addHover(chart, target) {
     .on("mousemove.tip", (event) => {
       const i = indexAt(chart.x, d3.pointer(event, chart.g.node())[0]);
       chart.highlight.attr("x", chart.x(i)).attr("visibility", "visible");
-      showTooltip(tooltipHtml(chart.labels[i], chart.allCounts[i], chart.current[i]), event);
+      showTooltip(tooltipHtml(chart.name, chart.labels[i], chart.allCounts[i], chart.current[i]), event);
     })
     .on("mouseleave.tip", () => {
       chart.highlight.attr("visibility", "hidden");
@@ -185,39 +186,8 @@ export function initTimeline(selector, lookups, strikes) {
   }));
 }
 
-function renderKey() {
-  const items = [];
-  if (isFiltered()) {
-    items.push({ label: "All strikes", fill: COLORS.context, stroke: COLORS.outline });
-    items.push({ label: "In selection", fill: COLORS.accent, stroke: COLORS.accent });
-    if (Object.values(charts).some((chart) => getSelection(chart.name).length > 0)) {
-      items.push({ label: "Outside selection", fill: COLORS.neutral, stroke: COLORS.neutral });
-    }
-  }
-  d3.select("#key-timeline")
-    .selectAll(".key-item")
-    .data(items, (d) => d.label)
-    .join((enter) => {
-      const item = enter.append("span").attr("class", "key-item");
-      item.append("span").attr("class", "key-swatch");
-      item.append("span").attr("class", "key-label");
-      return item;
-    })
-    .call((item) => {
-      item.select(".key-swatch").style("background", (d) => d.fill).style("border-color", (d) => d.stroke);
-      item.select(".key-label").text((d) => d.label);
-    });
-}
-
-function barFill(filtered, selected, i) {
-  if (!filtered) return COLORS.neutral;
-  if (selected.length > 0 && !selected.includes(i)) return COLORS.neutral;
-  return COLORS.accent;
-}
-
 export function updateTimeline() {
-  const filtered = isFiltered();
-  renderKey();
+  renderKey("#key-timeline", Object.values(charts).some((chart) => getSelection(chart.name).length > 0));
   Object.values(charts).forEach((chart) => {
     chart.current = chart.counts();
     const selected = getSelection(chart.name);
@@ -236,7 +206,7 @@ export function updateTimeline() {
       .duration(TRANSITION_MS)
       .attr("y", (v) => chart.y(v.strikes))
       .attr("height", (v) => chart.y(0) - chart.y(v.strikes))
-      .attr("fill", (v, i) => barFill(filtered, selected, i))
+      .attr("fill", (v, i) => barFill(selected, i))
       .attr("stroke", (v, i) => (selected.includes(i) ? COLORS.ink : "none"));
 
     if (chart.brush) syncBrush(chart);
