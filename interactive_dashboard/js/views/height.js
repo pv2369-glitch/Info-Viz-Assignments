@@ -35,6 +35,7 @@ export function initHeight(selector, lookups, strikes) {
     labels: lookups.height,
     unknown: lookups.unknown,
     damageLevels: lookups.damage,
+    rateGroup: "envelope",
     upward: true,
     formatLabel: heightLabel,
     unknownName: "Height not recorded",

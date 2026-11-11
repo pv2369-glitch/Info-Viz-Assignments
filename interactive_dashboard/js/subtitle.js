@@ -13,6 +13,7 @@ const DESCRIBERS = {
   monthOfYear: { labels: "monthNames", format: (labels) => labels.join(", ") },
   height: { labels: "height", format: heightRange, missing: "height not recorded" },
   phase: { labels: "phase", format: (labels) => labels.join(" or "), missing: "phase not recorded" },
+  species: { labels: "species", format: (labels) => labels.join(" or ") },
   time: { labels: "time", format: (labels) => labels.join(" or "), missing: "time not recorded" },
   size: { labels: "size", format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
 };

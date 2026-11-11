@@ -70,6 +70,7 @@ export function initState(strikes, lookups) {
   cf = crossfilter(strikes);
   dims.height = cf.dimension((d) => d.h);
   dims.phase = cf.dimension((d) => d.p);
+  dims.species = cf.dimension((d) => d.g);
   dims.time = cf.dimension((d) => d.t);
   dims.size = cf.dimension((d) => d.s);
   dims.year = cf.dimension((d) => d.y);

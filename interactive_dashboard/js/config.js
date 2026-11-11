@@ -24,6 +24,7 @@ export const LOW_HEIGHT_BINS = ["0", "1-500"];
 export const HEIGHT_SPLIT_LABEL = "500 ft";
 export const MIN_KNOWN_DAMAGE = 100;
 export const NOT_RECORDED = "Not recorded";
+export const SPECIES_TAIL = ["Unidentified", "Other"];
 
 export const FORMAT = {
   count: d3.format(","),

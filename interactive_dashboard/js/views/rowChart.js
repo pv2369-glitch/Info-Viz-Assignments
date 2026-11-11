@@ -8,6 +8,7 @@ const GAP = 26;
 const STEP = 30;
 const COUNT_SHARE = 0.45;
 const RATE_STEP = 0.1;
+const DOT_RADIUS = 4.5;
 const charts = [];
 
 export function rowAt(chart, py) {
@@ -64,17 +65,20 @@ export function toggleCode(chart, code) {
 
 export function createRowChart(spec) {
   const container = document.querySelector(spec.selector);
-  const { width } = container.getBoundingClientRect();
-  const unknownCode = spec.labels.indexOf(spec.unknown);
+  const { width, height } = container.getBoundingClientRect();
+  const left = spec.labelWidth ?? MARGIN.left;
+  const unknownCode = spec.unknown === undefined ? -1 : spec.labels.indexOf(spec.unknown);
   const knownCodes = spec.labels.map((label, code) => code).filter((code) => code !== unknownCode);
-  const plotBottom = MARGIN.top + knownCodes.length * STEP;
+  const available = (height - MARGIN.top - MARGIN.bottom) / knownCodes.length;
+  const step = spec.fit ? Math.min(STEP, available) : STEP;
+  const plotBottom = MARGIN.top + knownCodes.length * step;
 
   const allTotals = new Array(spec.labels.length).fill(0);
   spec.strikes.forEach((d) => {
     allTotals[d[spec.field]] += d.n;
   });
 
-  const countWidth = (width - MARGIN.left - MARGIN.right - GAP) * COUNT_SHARE;
+  const countWidth = (width - left - MARGIN.right - GAP) * COUNT_SHARE;
   const y = d3.scaleBand()
     .domain(spec.upward ? [...knownCodes].reverse() : knownCodes)
     .range([MARGIN.top, plotBottom])
@@ -82,16 +86,16 @@ export function createRowChart(spec) {
   const x = d3.scaleLinear()
     .domain([0, d3.max(knownCodes, (code) => allTotals[code])])
     .nice()
-    .range([MARGIN.left, MARGIN.left + countWidth]);
+    .range([left, left + countWidth]);
   const r = d3.scaleLinear()
-    .range([MARGIN.left + countWidth + GAP, width - MARGIN.right]);
+    .range([left + countWidth + GAP, width - MARGIN.right]);
 
   const svgHeight = plotBottom + MARGIN.bottom;
-  container.style.flex = "0 0 auto";
+  if (!spec.fit) container.style.flex = "0 0 auto";
   const svg = d3.select(container)
     .append("svg")
     .attr("viewBox", [0, 0, width, svgHeight])
-    .style("height", `${svgHeight}px`);
+    .style("height", spec.fit ? null : `${svgHeight}px`);
 
   const header = (xPos, text) => svg.append("text")
     .attr("x", xPos)
@@ -107,7 +111,7 @@ export function createRowChart(spec) {
     .call(d3.axisBottom(x).ticks(2).tickFormat(d3.format("~s")).tickSizeOuter(0));
   const rateAxis = svg.append("g").attr("transform", `translate(0,${plotBottom})`);
   svg.append("g")
-    .attr("transform", `translate(${MARGIN.left},0)`)
+    .attr("transform", `translate(${left},0)`)
     .call(d3.axisLeft(y).tickSize(0).tickPadding(6).tickFormat((code) => spec.formatLabel(spec.labels[code])));
   svg.append("line")
     .attr("x1", r.range()[0])
@@ -141,12 +145,29 @@ export function createRowChart(spec) {
     .attr("height", y.bandwidth())
     .attr("fill", COLORS.accent)
     .attr("visibility", "hidden");
-  rows.append("rect")
-    .attr("class", "rate-bar")
-    .attr("x", r.range()[0])
-    .attr("width", 0)
-    .attr("height", y.bandwidth())
-    .attr("fill", COLORS.damage);
+  if (spec.rateMark === "dot") {
+    rows.append("line")
+      .attr("x1", r.range()[0])
+      .attr("x2", r.range()[1])
+      .attr("y1", y.bandwidth() / 2)
+      .attr("y2", y.bandwidth() / 2)
+      .attr("stroke", COLORS.line);
+    rows.append("circle")
+      .attr("class", "rate-dot")
+      .attr("cx", r.range()[0])
+      .attr("cy", y.bandwidth() / 2)
+      .attr("r", DOT_RADIUS)
+      .attr("fill", COLORS.damage)
+      .attr("stroke", COLORS.ink)
+      .attr("stroke-width", 0.75);
+  } else {
+    rows.append("rect")
+      .attr("class", "rate-bar")
+      .attr("x", r.range()[0])
+      .attr("width", 0)
+      .attr("height", y.bandwidth())
+      .attr("fill", COLORS.damage);
+  }
   rows.append("text")
     .attr("class", "rate")
     .attr("x", r.range()[0] + 4)
@@ -154,6 +175,17 @@ export function createRowChart(spec) {
     .attr("dy", "0.35em")
     .attr("font-size", 11)
     .attr("fill", COLORS.ink);
+
+  if (spec.dividerBefore !== undefined) {
+    const dividerY = y(spec.labels.indexOf(spec.dividerBefore)) - (y.step() - y.bandwidth()) / 2;
+    svg.append("line")
+      .attr("x1", 2)
+      .attr("x2", width - 2)
+      .attr("y1", dividerY)
+      .attr("y2", dividerY)
+      .attr("stroke", COLORS.outline)
+      .attr("stroke-dasharray", "4 3");
+  }
 
   const highlight = svg.append("rect")
     .attr("x", x(0))
@@ -169,6 +201,9 @@ export function createRowChart(spec) {
     svg, x, y, r, rows, rateAxis, highlight, unknownCode,
     plot: { left: x(0), right: width - MARGIN.right, top: MARGIN.top, bottom: plotBottom },
     dimension: spec.dimension,
+    rateGroup: spec.rateGroup,
+    fixedRateMax: spec.rateMax,
+    labelGap: spec.rateMark === "dot" ? DOT_RADIUS + 5 : 4,
     labels: spec.labels,
     formatLabel: spec.formatLabel,
     unknownName: spec.unknownName,
@@ -176,6 +211,11 @@ export function createRowChart(spec) {
     unknownDamage: spec.damageLevels.findIndex((level) => level.damaging === null),
     current: groupCounts(spec.dimension, spec.labels.length),
   };
+
+  if (spec.unknownButton === undefined) {
+    charts.push(chart);
+    return chart;
+  }
 
   chart.unknownButton = d3.select(spec.unknownButton)
     .on("click", () => toggleCode(chart, unknownCode))
@@ -196,7 +236,7 @@ function renderChart(chart, rateMax) {
 
   chart.rateAxis.transition()
     .duration(TRANSITION_MS)
-    .call(d3.axisBottom(r).tickValues(d3.range(0, rateMax + 1e-9, rateMax > 0.3 ? 0.2 : RATE_STEP)).tickFormat(d3.format(".0%")).tickSizeOuter(0));
+    .call(d3.axisBottom(r).tickValues(d3.range(0, rateMax + 1e-9, rateMax > 0.6 ? 0.25 : rateMax > 0.3 ? 0.2 : RATE_STEP)).tickFormat(d3.format(".0%")).tickSizeOuter(0));
 
   rows.select(".bar")
     .transition()
@@ -207,6 +247,11 @@ function renderChart(chart, rateMax) {
     .transition()
     .duration(TRANSITION_MS)
     .attr("width", (code) => r(rateOf(chart.current[code]) ?? 0) - r(0));
+  rows.select(".rate-dot")
+    .attr("visibility", (code) => (rateOf(chart.current[code]) === null ? "hidden" : "visible"))
+    .transition()
+    .duration(TRANSITION_MS)
+    .attr("cx", (code) => r(rateOf(chart.current[code]) ?? 0));
   rows.select(".rate")
     .text((code) => {
       const rate = rateOf(chart.current[code]);
@@ -214,10 +259,11 @@ function renderChart(chart, rateMax) {
     })
     .transition()
     .duration(TRANSITION_MS)
-    .attr("x", (code) => r(rateOf(chart.current[code]) ?? 0) + 4);
+    .attr("x", (code) => r(rateOf(chart.current[code]) ?? 0) + chart.labelGap);
   rows.select(".selected-outline").attr("visibility", (code) => (selected.includes(code) ? "visible" : "hidden"));
   rows.select(".marker").attr("visibility", (code) => (selected.includes(code) ? "visible" : "hidden"));
 
+  if (!chart.unknownButton) return;
   const unknown = chart.current[chart.unknownCode];
   const total = d3.sum(chart.current, (c) => c.strikes);
   const share = total > 0 ? unknown.strikes / total : 0;
@@ -230,7 +276,9 @@ export function updateRowCharts() {
   charts.forEach((chart) => {
     chart.current = groupCounts(chart.dimension, chart.labels.length);
   });
-  const rates = charts.flatMap((chart) => chart.y.domain().map((code) => rateOf(chart.current[code]) ?? 0));
-  const rateMax = Math.max(1, Math.ceil(d3.max(rates) / RATE_STEP)) / (1 / RATE_STEP);
-  charts.forEach((chart) => renderChart(chart, rateMax));
+  d3.group(charts, (chart) => chart.rateGroup).forEach((group) => {
+    const rates = group.flatMap((chart) => chart.y.domain().map((code) => rateOf(chart.current[code]) ?? 0));
+    const fitted = Math.max(1, Math.ceil(d3.max(rates) / RATE_STEP)) / (1 / RATE_STEP);
+    group.forEach((chart) => renderChart(chart, chart.fixedRateMax ?? fitted));
+  });
 }
