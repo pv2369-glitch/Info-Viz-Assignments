@@ -12,6 +12,7 @@ export function initPhase(selector, lookups, strikes) {
     unknown: lookups.unknown,
     damageLevels: lookups.damage,
     rateGroup: "envelope",
+    fit: true,
     upward: false,
     formatLabel: (label) => label,
     unknownName: "Phase not recorded",

@@ -71,9 +71,10 @@ export function initState(strikes, lookups) {
   dims.height = cf.dimension((d) => d.h);
   dims.phase = cf.dimension((d) => d.p);
   dims.species = cf.dimension((d) => d.g);
+  dims.airport = cf.dimension((d) => d.a);
   dims.time = cf.dimension((d) => d.t);
   dims.size = cf.dimension((d) => d.s);
-  dims.year = cf.dimension((d) => d.y);
+  dims.month = cf.dimension((d) => d.m);
   dims.monthOfYear = cf.dimension((d) => d.mo);
   Object.keys(dims).forEach((name) => {
     groups[name] = dims[name].group().reduce(...makeCountReducers());

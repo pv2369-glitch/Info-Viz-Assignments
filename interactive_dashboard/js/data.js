@@ -39,15 +39,13 @@ export async function loadData() {
   ]);
 
   const isDamaging = lookups.damage.map((level) => level.damaging);
-  const yearOfMonth = lookups.months.map((month) => month.slice(0, 4));
-  lookups.years = [...new Set(yearOfMonth)];
-  const yearIndex = yearOfMonth.map((year) => lookups.years.indexOf(year));
   const monthOfYear = lookups.months.map((month) => Number(month.slice(5, 7)) - 1);
+  lookups.monthLabels = lookups.months.map((month) => d3.timeFormat("%b %Y")(d3.timeParse("%Y-%m")(month)));
+  lookups.airportIds = airportRows.map((a) => a.id);
   lookups.monthNames = d3.range(d3.max(monthOfYear) + 1).map((i) => d3.timeFormat("%b")(new Date(2000, i, 1)));
 
   const strikes = rows.map((r) => ({
     ...r,
-    y: yearIndex[r.m],
     mo: monthOfYear[r.m],
     damagingN: isDamaging[r.d] ? r.n : 0,
     knownDamageN: isDamaging[r.d] === null ? 0 : r.n,

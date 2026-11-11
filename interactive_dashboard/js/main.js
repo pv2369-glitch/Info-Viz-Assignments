@@ -7,9 +7,11 @@ import { initTimeline, updateTimeline } from "./views/timeline.js";
 import { initHeight, updateHeight } from "./views/height.js";
 import { initPhase } from "./views/phase.js";
 import { initSpecies } from "./views/species.js";
+import { initMap, updateMap, resetZoom, isZoomed } from "./views/map.js";
 import { updateRowCharts } from "./views/rowChart.js";
 import { renderRowLegend } from "./legend.js";
 import { renderKey } from "./key.js";
+import { initAbout } from "./about.js";
 
 function setKpi(id, value, note) {
   const card = d3.select(`#${id}`);
@@ -43,26 +45,32 @@ async function main() {
   const { strikes } = data;
   initChips("chips-time", lookups.time, "time", lookups.unknown, unknownShare(strikes, "t", lookups.time, lookups.unknown));
   initChips("chips-size", lookups.size, "size", lookups.unknown, unknownShare(strikes, "s", lookups.size, lookups.unknown));
-  d3.select("#reset").on("click", clearAll);
+  d3.select("#reset").on("click", () => {
+    clearAll();
+    resetZoom();
+  });
 
   const renderText = () => {
     const t = totals();
     const grand = grandTotals();
     renderKpis(t, grand, nGroups);
     renderSubtitle(lookups, t, grand);
-    d3.select("#reset").property("disabled", !isFiltered());
+    d3.select("#reset").property("disabled", !isFiltered() && !isZoomed());
   };
   renderText();
+  initAbout(data, grandTotals());
   renderRowLegend("#legend-damage");
 
   initHeight("#chart-height", lookups, data.strikes);
   initPhase("#chart-phase", lookups, data.strikes);
+  initMap("#chart-map", "#legend-map", data);
   initTimeline("#chart-timeline", lookups, data.strikes);
   initSpecies("#chart-species", lookups, data.strikes);
 
   const render = () => {
     renderText();
     updateTimeline();
+    updateMap();
     updateRowCharts();
     updateHeight();
     renderKey("#key-envelope", ["height", "phase"].some((name) => getSelection(name).length > 0));

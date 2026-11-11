@@ -31,14 +31,12 @@ body {
 
 .dashboard {
   display: grid;
-  grid-template-columns: 1.15fr 1fr;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr);
+  grid-template-columns: 1.38fr 1fr;
+  grid-template-rows: auto auto minmax(0, 1fr);
   grid-template-areas:
     "top top"
     "kpil kpir"
-    "legl legr"
-    "map env"
-    "time species";
+    "left right";
   gap: 8px var(--gap);
   height: 100vh;
   min-height: 760px;
@@ -59,6 +57,88 @@ body {
 .titles {
   flex: 1;
   min-width: 0;
+}
+
+.eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin: 0 0 2px;
+  color: var(--ink-soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.about {
+  max-width: 760px;
+  padding: 26px 30px 24px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.about::backdrop {
+  background: rgba(34, 34, 34, 0.45);
+}
+
+.about h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.about-lede {
+  margin: 0 0 18px;
+  font-size: 14px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 28px;
+}
+
+.about h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.about ol,
+.about ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.about li {
+  margin-bottom: 4px;
+}
+
+.swatch-inline {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 2px;
+  vertical-align: -1px;
+}
+
+.swatch-damage {
+  background: var(--dmg-3);
+}
+
+.swatch-select {
+  background: var(--accent);
+}
+
+.about-close {
+  display: block;
+  margin: 20px 0 0 auto;
 }
 
 h1 {
@@ -114,11 +194,6 @@ h1 {
   color: var(--ink-soft);
 }
 
-.chip-row-button {
-  align-self: flex-start;
-  margin: 6px 0 0;
-}
-
 .chip-note {
   color: var(--ink-soft);
   font-size: 11px;
@@ -144,8 +219,14 @@ h1 {
 }
 
 .reset:hover:not(:disabled),
-.chip:hover {
+.chip:hover:not(:disabled) {
   border-color: var(--accent);
+}
+
+.chip:disabled {
+  border-color: var(--line);
+  color: var(--neutral);
+  cursor: default;
 }
 
 .reset:disabled {
@@ -201,12 +282,19 @@ h1 {
   font-size: 12px;
 }
 
-.legend-left {
-  grid-area: legl;
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
 }
 
-.legend-right {
-  grid-area: legr;
+.column-left {
+  grid-area: left;
+}
+
+.column-right {
+  grid-area: right;
 }
 
 .panel {
@@ -253,8 +341,13 @@ h1 {
 
 .legend {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 4px 14px;
+}
+
+.legend .key-item {
+  white-space: nowrap;
 }
 
 .legend-title {
@@ -274,11 +367,12 @@ h1 {
 }
 
 .map-panel {
-  grid-area: map;
+  flex: 1.35 1 0;
 }
 
 .envelope {
-  grid-area: env;
+  flex: 19 1 0;
+  gap: 6px;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -289,7 +383,7 @@ h1 {
 }
 
 .envelope-label {
-  margin-bottom: 6px;
+  white-space: nowrap;
   color: var(--ink-soft);
   font-size: 11px;
   font-weight: 700;
@@ -297,20 +391,20 @@ h1 {
   text-transform: uppercase;
 }
 
-.envelope-views {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  flex: 1;
-  min-height: 0;
-}
-
 .timeline-panel {
-  grid-area: time;
+  flex: 1 1 0;
 }
 
 .species-panel {
-  grid-area: species;
+  flex: 9 1 0;
+}
+
+.height-panel {
+  flex: 8 1 0;
+}
+
+.phase-panel {
+  flex: 7 1 0;
 }
 
 .tooltip {

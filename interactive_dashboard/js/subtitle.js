@@ -1,7 +1,7 @@
 import { FORMAT, HEIGHT_SPLIT_LABEL, MIN_KNOWN_DAMAGE } from "./config.js";
 import { getSelection } from "./state.js";
 
-const yearRange = (labels) => (labels.length > 1 ? `${labels[0]}–${labels[labels.length - 1]}` : labels[0]);
+const monthRange = (labels) => (labels.length > 1 ? `${labels[0]}–${labels[labels.length - 1]}` : labels[0]);
 
 const heightRange = (labels) => {
   const pretty = labels.map((label) => label.replace("-", "–"));
@@ -9,11 +9,12 @@ const heightRange = (labels) => {
 };
 
 const DESCRIBERS = {
-  year: { labels: "years", format: yearRange },
+  month: { labels: "monthLabels", format: monthRange },
   monthOfYear: { labels: "monthNames", format: (labels) => labels.join(", ") },
   height: { labels: "height", format: heightRange, missing: "height not recorded" },
   phase: { labels: "phase", format: (labels) => labels.join(" or "), missing: "phase not recorded" },
   species: { labels: "species", format: (labels) => labels.join(" or ") },
+  airport: { labels: "airportIds", format: (labels) => (labels.length > 3 ? `${labels.slice(0, 2).join(", ")} and ${labels.length - 2} more airports` : labels.join(", ")) },
   time: { labels: "time", format: (labels) => labels.join(" or "), missing: "time not recorded" },
   size: { labels: "size", format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
 };

@@ -5,7 +5,7 @@ import { barFill } from "../key.js";
 
 const MARGIN = { top: 18, right: 40, bottom: 22, left: 78 };
 const GAP = 26;
-const STEP = 30;
+const STEP = 26;
 const COUNT_SHARE = 0.45;
 const RATE_STEP = 0.1;
 const DOT_RADIUS = 4.5;
@@ -29,11 +29,20 @@ function severityLine(chart, counts) {
   return parts.length ? parts.join(" · ") : "No damaging strikes";
 }
 
+function sharesOf(chart) {
+  const total = d3.sum(chart.knownCodes, (code) => chart.current[code].strikes);
+  return chart.labels.map((label, code) => (total > 0 ? chart.current[code].strikes / total : 0));
+}
+
 function tooltipHtml(chart, code) {
   const counts = chart.current[code];
+  const filtered = isFilteredExcept(chart.dimension);
   return [
     `<strong>${chart.formatLabel(chart.labels[code])}</strong>`,
-    `${FORMAT.count(counts.strikes)} strikes${isFilteredExcept(chart.dimension) ? " matching the other filters" : ""}`,
+    `${FORMAT.count(counts.strikes)} strikes${filtered ? " matching the other filters" : ""}`,
+    filtered
+      ? `${FORMAT.pct(sharesOf(chart)[code])} of matching strikes vs ${FORMAT.pct(chart.allShares[code])} of all strikes`
+      : `${FORMAT.pct(chart.allShares[code])} of all strikes`,
     damageLine(counts),
     severityLine(chart, counts),
     `Damage not recorded: ${FORMAT.count(counts.byDamage[chart.unknownDamage])}`,
@@ -77,6 +86,8 @@ export function createRowChart(spec) {
   spec.strikes.forEach((d) => {
     allTotals[d[spec.field]] += d.n;
   });
+  const allKnown = d3.sum(knownCodes, (code) => allTotals[code]);
+  const allShares = allTotals.map((n) => n / allKnown);
 
   const countWidth = (width - left - MARGIN.right - GAP) * COUNT_SHARE;
   const y = d3.scaleBand()
@@ -84,7 +95,7 @@ export function createRowChart(spec) {
     .range([MARGIN.top, plotBottom])
     .padding(0.25);
   const x = d3.scaleLinear()
-    .domain([0, d3.max(knownCodes, (code) => allTotals[code])])
+    .domain([0, d3.max(knownCodes, (code) => allShares[code])])
     .nice()
     .range([left, left + countWidth]);
   const r = d3.scaleLinear()
@@ -95,6 +106,7 @@ export function createRowChart(spec) {
   const svg = d3.select(container)
     .append("svg")
     .attr("viewBox", [0, 0, width, svgHeight])
+    .attr("preserveAspectRatio", "xMinYMin meet")
     .style("height", spec.fit ? null : `${svgHeight}px`);
 
   const header = (xPos, text) => svg.append("text")
@@ -103,12 +115,12 @@ export function createRowChart(spec) {
     .attr("font-size", 10)
     .attr("fill", COLORS.ink)
     .text(text);
-  header(x.range()[0], "Strikes");
+  header(x.range()[0], spec.unknown === undefined ? "% of strikes" : "% of strikes recorded");
   header(r.range()[0], "% damaging");
 
-  svg.append("g")
+  const countAxis = svg.append("g")
     .attr("transform", `translate(0,${plotBottom})`)
-    .call(d3.axisBottom(x).ticks(2).tickFormat(d3.format("~s")).tickSizeOuter(0));
+    .call(countAxisOf(x));
   const rateAxis = svg.append("g").attr("transform", `translate(0,${plotBottom})`);
   svg.append("g")
     .attr("transform", `translate(${left},0)`)
@@ -129,7 +141,7 @@ export function createRowChart(spec) {
   const fullBar = (selection, cls) => selection.append("rect")
     .attr("class", cls)
     .attr("x", x(0))
-    .attr("width", (code) => x(allTotals[code]) - x(0))
+    .attr("width", (code) => x(allShares[code]) - x(0))
     .attr("height", y.bandwidth());
   fullBar(rows, "context").attr("fill", COLORS.context).attr("stroke", COLORS.outline);
   fullBar(rows, "bar").attr("fill", COLORS.neutral);
@@ -174,7 +186,10 @@ export function createRowChart(spec) {
     .attr("y", y.bandwidth() / 2)
     .attr("dy", "0.35em")
     .attr("font-size", 11)
-    .attr("fill", COLORS.ink);
+    .attr("fill", COLORS.ink)
+    .attr("stroke", "#ffffff")
+    .attr("stroke-width", 4)
+    .attr("paint-order", "stroke");
 
   if (spec.dividerBefore !== undefined) {
     const dividerY = y(spec.labels.indexOf(spec.dividerBefore)) - (y.step() - y.bandwidth()) / 2;
@@ -198,7 +213,7 @@ export function createRowChart(spec) {
     .attr("visibility", "hidden");
 
   const chart = {
-    svg, x, y, r, rows, rateAxis, highlight, unknownCode,
+    svg, x, y, r, rows, rateAxis, countAxis, highlight, unknownCode, knownCodes, allShares,
     plot: { left: x(0), right: width - MARGIN.right, top: MARGIN.top, bottom: plotBottom },
     dimension: spec.dimension,
     rateGroup: spec.rateGroup,
@@ -229,10 +244,26 @@ export function createRowChart(spec) {
   return chart;
 }
 
+function countAxisOf(x) {
+  return d3.axisBottom(x).ticks(3).tickFormat(d3.format(".0%")).tickSizeOuter(0);
+}
+
+function fitShares(chart, shares) {
+  const max = d3.max(chart.knownCodes, (code) => Math.max(shares[code], chart.allShares[code]));
+  chart.x.domain([0, max || 1]).nice();
+  chart.countAxis.transition().duration(TRANSITION_MS).call(countAxisOf(chart.x));
+  chart.rows.select(".context")
+    .transition()
+    .duration(TRANSITION_MS)
+    .attr("width", (code) => chart.x(chart.allShares[code]) - chart.x(0));
+}
+
 function renderChart(chart, rateMax) {
   const { x, r, rows } = chart;
   const selected = getSelection(chart.dimension);
   r.domain([0, rateMax]);
+  const shares = sharesOf(chart);
+  fitShares(chart, shares);
 
   chart.rateAxis.transition()
     .duration(TRANSITION_MS)
@@ -241,7 +272,7 @@ function renderChart(chart, rateMax) {
   rows.select(".bar")
     .transition()
     .duration(TRANSITION_MS)
-    .attr("width", (code) => x(chart.current[code].strikes) - x(0))
+    .attr("width", (code) => x(shares[code]) - x(0))
     .attr("fill", (code) => barFill(selected, code));
   rows.select(".rate-bar")
     .transition()
@@ -260,7 +291,11 @@ function renderChart(chart, rateMax) {
     .transition()
     .duration(TRANSITION_MS)
     .attr("x", (code) => r(rateOf(chart.current[code]) ?? 0) + chart.labelGap);
-  rows.select(".selected-outline").attr("visibility", (code) => (selected.includes(code) ? "visible" : "hidden"));
+  rows.select(".selected-outline")
+    .attr("visibility", (code) => (selected.includes(code) ? "visible" : "hidden"))
+    .transition()
+    .duration(TRANSITION_MS)
+    .attr("width", (code) => x(shares[code]) - x(0));
   rows.select(".marker").attr("visibility", (code) => (selected.includes(code) ? "visible" : "hidden"));
 
   if (!chart.unknownButton) return;

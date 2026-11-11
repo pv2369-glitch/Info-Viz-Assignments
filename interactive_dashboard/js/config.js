@@ -13,6 +13,7 @@ export const COLORS = {
   unknown: "#d9d9d9",
   context: "#e3e3e3",
   line: "#cccccc",
+  envelope: "#f7f7f7",
   damage: "#e6550d",
 };
 
@@ -25,6 +26,8 @@ export const HEIGHT_SPLIT_LABEL = "500 ft";
 export const MIN_KNOWN_DAMAGE = 100;
 export const NOT_RECORDED = "Not recorded";
 export const SPECIES_TAIL = ["Unidentified", "Other"];
+export const RATE_BREAKS = [0.05, 0.1, 0.2];
+export const MIN_AIRPORT_KNOWN = 30;
 
 export const FORMAT = {
   count: d3.format(","),

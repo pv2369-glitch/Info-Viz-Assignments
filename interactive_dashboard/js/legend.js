@@ -7,6 +7,6 @@ export function renderRowLegend(selector) {
     .attr("class", "key-swatch")
     .style("background", COLORS.damage)
     .style("border-color", COLORS.damage);
-  item.append("span").text("% damaging: share of strikes that damaged the aircraft, where damage was recorded");
+  item.append("span").text("% damaging (of strikes with damage recorded)");
   legend.append("span").attr("class", "key").attr("id", "key-envelope");
 }
