@@ -8,10 +8,23 @@
   <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crossfilter2@1.5.4/crossfilter.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script>if (location.protocol === "file:") document.documentElement.classList.add("from-file");</script>
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
-  <div class="dashboard">
+  <div class="load-error" role="alert">
+    <h2>The data could not be loaded</h2>
+    <p class="when-file">
+      This page was opened straight from disk, and browsers do not let it read the data files that way.
+      In this folder run <code>python -m http.server 8000</code>, then open
+      <a href="http://localhost:8000">http://localhost:8000</a>.
+    </p>
+    <p class="when-other">
+      The charts need an internet connection to load D3 from a CDN. Check the connection and reload the page.
+      <span class="load-error-detail" id="load-error-detail"></span>
+    </p>
+  </div>
+  <div class="dashboard is-loading" aria-busy="true">
 
     <header class="top">
       <div class="titles">
@@ -19,7 +32,7 @@
           <span id="eyebrow-text">Wildlife strikes on US aircraft</span>
         </p>
         <h1 id="title">Most strikes happen low, but higher strikes do more damage</h1>
-        <p id="subtitle" class="subtitle">FAA Wildlife Strike Database, US airports, 2000–2025</p>
+        <p id="subtitle" class="subtitle">Loading FAA strike records…</p>
       </div>
       <div class="filters">
         <div class="chip-row">
@@ -67,7 +80,7 @@
       <section class="panel map-panel" id="v1">
         <div class="panel-head">
           <h2 class="panel-title">Damaging strikes by airport (click an airport or state, shift to add, shift-drag a box, scroll to zoom)</h2>
-          <button type="button" class="chip" id="map-zoom-reset">Reset zoom</button>
+          <button type="button" class="reset reset-small" id="map-zoom-reset">Reset zoom</button>
         </div>
         <div class="chart" id="chart-map"></div>
       </section>
@@ -140,7 +153,8 @@
         <h3>Read with care</h3>
         <ul>
           <li>Reporting is voluntary. Many fields were never recorded (for example height for <strong data-fact="heightMissing"></strong> of strikes); they are shown as "Not recorded", never guessed.</li>
-          <li>"% damaging" counts only strikes whose damage level was recorded.</li>
+          <li>"% damaging" counts only strikes whose damage level was recorded, and is shown only when at least <strong data-fact="minRate"></strong> such strikes back it.</li>
+          <li>On the map, nearby small airports share one circle until you zoom in. <strong data-fact="unmapped"></strong> strikes have no mappable airport and are not on the map.</li>
           <li>The long rise in strikes is largely better reporting, not only more wildlife.</li>
         </ul>
       </section>

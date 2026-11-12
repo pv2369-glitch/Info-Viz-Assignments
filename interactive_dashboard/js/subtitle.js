@@ -8,13 +8,27 @@ const heightRange = (labels) => {
   return pretty.length > 1 ? `${pretty[0]} to ${pretty[pretty.length - 1]} ft` : `${pretty[0]} ft`;
 };
 
+function describeAirports(codes, lookups) {
+  const chosen = new Set(codes);
+  const byState = d3.group(lookups.airportStates.map((state, i) => i), (i) => lookups.airportStates[i]);
+  const states = [...byState]
+    .filter(([code, ids]) => code in lookups.stateNames && ids.length > 1 && ids.every((i) => chosen.has(i)))
+    .map(([code]) => code);
+  const covered = new Set(states.flatMap((code) => byState.get(code)));
+  const rest = codes.filter((i) => !covered.has(i)).map((i) => lookups.airportIds[i]);
+  const parts = [];
+  if (states.length) parts.push(`all airports in ${states.map((code) => lookups.stateNames[code]).join(", ")}`);
+  if (rest.length) parts.push(rest.length > 3 ? `${rest.slice(0, 2).join(", ")} and ${rest.length - 2} more airports` : rest.join(", "));
+  return parts.join(" + ");
+}
+
 const DESCRIBERS = {
   month: { labels: "monthLabels", format: monthRange },
   monthOfYear: { labels: "monthNames", format: (labels) => labels.join(", ") },
   height: { labels: "height", format: heightRange, missing: "height not recorded" },
   phase: { labels: "phase", format: (labels) => labels.join(" or "), missing: "phase not recorded" },
   species: { labels: "species", format: (labels) => labels.join(" or ") },
-  airport: { labels: "airportIds", format: (labels) => (labels.length > 3 ? `${labels.slice(0, 2).join(", ")} and ${labels.length - 2} more airports` : labels.join(", ")) },
+  airport: { describeCodes: describeAirports },
   time: { labels: "time", format: (labels) => labels.join(" or "), missing: "time not recorded" },
   size: { labels: "size", format: (labels) => `${labels.join(" or ")} animals`, missing: "animal size not recorded" },
 };
@@ -31,7 +45,9 @@ function describeSelection(lookups) {
   return Object.entries(DESCRIBERS)
     .map(([name, spec]) => {
       const codes = [...getSelection(name)].sort((a, b) => a - b);
-      return codes.length ? describe(spec, codes.map((c) => lookups[spec.labels][c]), lookups.unknown) : null;
+      if (!codes.length) return null;
+      if (spec.describeCodes) return spec.describeCodes(codes, lookups);
+      return describe(spec, codes.map((c) => lookups[spec.labels][c]), lookups.unknown);
     })
     .filter(Boolean);
 }

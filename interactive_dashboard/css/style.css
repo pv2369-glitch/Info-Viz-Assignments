@@ -5,6 +5,7 @@
   --bg: #ffffff;
   --panel-bg: #ffffff;
   --envelope-bg: #f7f7f7;
+  --skeleton: #ececec;
   --neutral: #888888;
   --accent: #2166ac;
   --dmg-1: #fee6ce;
@@ -218,6 +219,12 @@ h1 {
   cursor: pointer;
 }
 
+.reset-small {
+  padding: 3px 10px;
+  border-width: 1px;
+  font-size: 11px;
+}
+
 .reset:hover:not(:disabled),
 .chip:hover:not(:disabled) {
   border-color: var(--accent);
@@ -405,6 +412,84 @@ h1 {
 
 .phase-panel {
   flex: 7 1 0;
+}
+
+.is-loading .chart,
+.is-loading .legend,
+.is-loading .kpi-value {
+  border-radius: var(--radius);
+  background: var(--skeleton);
+  animation: skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+.is-loading .kpi-value {
+  min-width: 110px;
+  color: transparent;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .is-loading * {
+    animation: none;
+  }
+}
+
+.load-error {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 20;
+  max-width: 520px;
+  padding: 22px 26px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  line-height: 1.5;
+  transform: translate(-50%, -50%);
+}
+
+.load-error h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.load-error p {
+  margin: 0;
+}
+
+.load-error-detail {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink-soft);
+  font-size: 12px;
+}
+
+.from-file .load-error,
+.load-failed .load-error {
+  display: block;
+}
+
+.from-file .when-other,
+.load-failed:not(.from-file) .when-file {
+  display: none;
+}
+
+.from-file .dashboard,
+.load-failed .dashboard {
+  opacity: 0.35;
+}
+
+.from-file .is-loading *,
+.load-failed .is-loading * {
+  animation: none;
 }
 
 .tooltip {

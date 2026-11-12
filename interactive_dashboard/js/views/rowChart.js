@@ -1,4 +1,4 @@
-import { COLORS, FORMAT, TRANSITION_MS } from "../config.js";
+import { COLORS, FORMAT, TRANSITION_MS, MIN_RATE_KNOWN } from "../config.js";
 import { groupCounts, getSelection, filterSet, isFilteredExcept } from "../state.js";
 import { showTooltip, hideTooltip, damageLine } from "../tooltip.js";
 import { barFill } from "../key.js";
@@ -18,7 +18,13 @@ export function rowAt(chart, py) {
 }
 
 function rateOf(counts) {
-  return counts.known > 0 ? counts.damaging / counts.known : null;
+  return counts.known >= MIN_RATE_KNOWN ? counts.damaging / counts.known : null;
+}
+
+function rateText(counts) {
+  if (counts.known === 0) return "no damage recorded";
+  if (counts.known < MIN_RATE_KNOWN) return `too few to rate (n = ${counts.known})`;
+  return FORMAT.pct(counts.damaging / counts.known);
 }
 
 function severityLine(chart, counts) {
@@ -43,7 +49,7 @@ function tooltipHtml(chart, code) {
     filtered
       ? `${FORMAT.pct(sharesOf(chart)[code])} of matching strikes vs ${FORMAT.pct(chart.allShares[code])} of all strikes`
       : `${FORMAT.pct(chart.allShares[code])} of all strikes`,
-    damageLine(counts),
+    counts.known > 0 && counts.known < MIN_RATE_KNOWN ? `Fewer than ${MIN_RATE_KNOWN} strikes with recorded damage: too few to rate` : damageLine(counts),
     severityLine(chart, counts),
     `Damage not recorded: ${FORMAT.count(counts.byDamage[chart.unknownDamage])}`,
   ].join("<br>");
@@ -284,10 +290,7 @@ function renderChart(chart, rateMax) {
     .duration(TRANSITION_MS)
     .attr("cx", (code) => r(rateOf(chart.current[code]) ?? 0));
   rows.select(".rate")
-    .text((code) => {
-      const rate = rateOf(chart.current[code]);
-      return rate === null ? "no damage recorded" : FORMAT.pct(rate);
-    })
+    .text((code) => rateText(chart.current[code]))
     .transition()
     .duration(TRANSITION_MS)
     .attr("x", (code) => r(rateOf(chart.current[code]) ?? 0) + chart.labelGap);

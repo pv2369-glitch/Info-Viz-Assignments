@@ -42,6 +42,8 @@ export async function loadData() {
   const monthOfYear = lookups.months.map((month) => Number(month.slice(5, 7)) - 1);
   lookups.monthLabels = lookups.months.map((month) => d3.timeFormat("%b %Y")(d3.timeParse("%Y-%m")(month)));
   lookups.airportIds = airportRows.map((a) => a.id);
+  lookups.airportStates = airportRows.map((a) => a.state);
+  lookups.stateNames = {};
   lookups.monthNames = d3.range(d3.max(monthOfYear) + 1).map((i) => d3.timeFormat("%b")(new Date(2000, i, 1)));
 
   const strikes = rows.map((r) => ({

@@ -79,4 +79,17 @@ async function main() {
   render();
 }
 
-main();
+function finishLoading() {
+  const dashboard = document.querySelector(".dashboard");
+  dashboard.classList.remove("is-loading");
+  dashboard.setAttribute("aria-busy", "false");
+}
+
+function showLoadError(error) {
+  console.error(error);
+  document.documentElement.classList.add("load-failed");
+  document.querySelector("#load-error-detail").textContent = `Details: ${error.message}`;
+  finishLoading();
+}
+
+main().then(finishLoading, showLoadError);

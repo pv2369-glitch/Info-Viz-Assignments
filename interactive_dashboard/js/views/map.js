@@ -1,10 +1,9 @@
-import { COLORS, DAMAGE_RAMP, FORMAT, TRANSITION_MS, RATE_BREAKS, MIN_AIRPORT_KNOWN } from "../config.js";
+import { COLORS, DAMAGE_RAMP, FORMAT, TRANSITION_MS, RATE_BREAKS, MIN_RATE_KNOWN } from "../config.js";
 import { groupCounts, isFiltered, isFilteredExcept, getSelection, filterSet } from "../state.js";
 import { showTooltip, moveTooltip, hideTooltip, damageLine } from "../tooltip.js";
 
 const MAX_RADIUS = 20;
 const PADDING = 8;
-const SIZE_EXAMPLES = [10, 100, 1000];
 const SELECTED_STROKE = 2.5;
 const MAX_ZOOM = 8;
 const CLUSTER_PX = 14;
@@ -13,7 +12,7 @@ const rateColour = d3.scaleThreshold().domain(RATE_BREAKS).range(DAMAGE_RAMP);
 let chart;
 
 function fillFor(counts) {
-  if (counts.known < MIN_AIRPORT_KNOWN) return "#ffffff";
+  if (counts.known < MIN_RATE_KNOWN) return "#ffffff";
   return rateColour(counts.damaging / counts.known);
 }
 
@@ -37,37 +36,38 @@ function tooltipHtml(mark) {
   return [
     title,
     `${FORMAT.count(counts.damaging)} damaging of ${FORMAT.count(counts.strikes)} strikes${isFilteredExcept("airport") ? " matching the other filters" : ""}`,
-    counts.known < MIN_AIRPORT_KNOWN ? `Fewer than ${MIN_AIRPORT_KNOWN} strikes with recorded damage: too few to rate` : damageLine(counts),
+    counts.known < MIN_RATE_KNOWN ? `Fewer than ${MIN_RATE_KNOWN} strikes with recorded damage: too few to rate` : damageLine(counts),
   ].join("<br>");
 }
 
 function renderLegend(selector, r, unmapped) {
   const legend = d3.select(selector);
   const sizes = legend.append("span").attr("class", "key-item");
-  sizes.append("span").attr("class", "legend-title").text("Circle area = damaging strikes:");
-  const biggest = r(d3.max(SIZE_EXAMPLES));
-  const svg = sizes.append("svg")
-    .attr("width", SIZE_EXAMPLES.length * (biggest * 2 + 30))
-    .attr("height", biggest * 2 + 2);
+  sizes.append("span").attr("class", "legend-title").text("Area = damaging strikes:");
+  const max = r.domain()[1];
+  const magnitude = 10 ** Math.floor(Math.log10(max));
+  const top = Math.floor(max / magnitude) * magnitude;
+  const examples = [top / 100, top / 10, top].filter((value) => value >= 1);
+  const biggest = r(top);
+  const svg = sizes.append("svg").attr("height", biggest * 2 + 2);
   let x = 0;
-  SIZE_EXAMPLES.forEach((value) => {
+  examples.forEach((value) => {
     const radius = r(value);
     svg.append("circle")
-      .attr("cx", x + biggest)
+      .attr("cx", x + radius)
       .attr("cy", biggest * 2 + 1 - radius)
       .attr("r", radius)
       .attr("fill", "none")
       .attr("stroke", COLORS.outline);
     svg.append("text")
-      .attr("x", x + biggest * 2 + 3)
+      .attr("x", x + radius * 2 + 3)
       .attr("y", biggest * 2)
-      .attr("font-size", 10)
+      .attr("font-size", 11)
       .attr("fill", COLORS.ink)
       .text(d3.format("~s")(value));
-    x += biggest * 2 + 30;
+    x += radius * 2 + 30;
   });
-
-  legend.append("span").attr("class", "chip-note").text("Nearby small airports are combined until you zoom in");
+  svg.attr("width", x);
 
   const colours = legend.append("span").attr("class", "key-item");
   colours.append("span").attr("class", "legend-title").text("% damaging:");
@@ -82,9 +82,9 @@ function renderLegend(selector, r, unmapped) {
   });
   const few = colours.append("span").attr("class", "key-item");
   few.append("span").attr("class", "key-swatch").style("background", "#ffffff").style("border-color", COLORS.outline);
-  few.append("span").text(`too few to rate (<${MIN_AIRPORT_KNOWN})`);
+  few.append("span").text(`too few to rate (<${MIN_RATE_KNOWN})`);
 
-  legend.append("span").attr("class", "chip-note").text(`${FORMAT.count(unmapped)} strikes have no mappable airport and are not shown`);
+  d3.selectAll("[data-fact=unmapped]").text(FORMAT.count(unmapped));
 }
 
 function setAirports(codes) {
@@ -132,6 +132,7 @@ function stateCode(feature) {
     const counts = d3.rollup(inside, (v) => v.length, (airport) => airport.state);
     const best = d3.greatest(counts, ([, n]) => n);
     chart.stateCodes.set(feature, best ? best[0] : null);
+    if (best) chart.stateNames[best[0]] = feature.properties.name;
   }
   return chart.stateCodes.get(feature);
 }
@@ -374,6 +375,7 @@ export function initMap(selector, legendSelector, data) {
     layers: d3.selectAll([stateLayer.node(), markLayer.node()]),
     states: states.features,
     stateCodes: new Map(),
+    stateNames: data.lookups.stateNames,
     levels: new Map(),
     maxLevel: Math.log2(MAX_ZOOM),
     airports: data.airports,

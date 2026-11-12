@@ -27,7 +27,7 @@ export const MIN_KNOWN_DAMAGE = 100;
 export const NOT_RECORDED = "Not recorded";
 export const SPECIES_TAIL = ["Unidentified", "Other"];
 export const RATE_BREAKS = [0.05, 0.1, 0.2];
-export const MIN_AIRPORT_KNOWN = 30;
+export const MIN_RATE_KNOWN = 30;
 
 export const FORMAT = {
   count: d3.format(","),

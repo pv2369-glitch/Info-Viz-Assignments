@@ -1,4 +1,4 @@
-import { FORMAT } from "./config.js";
+import { FORMAT, MIN_RATE_KNOWN } from "./config.js";
 
 export function initAbout(data, grand) {
   const { lookups, strikes, airports } = data;
@@ -12,8 +12,11 @@ export function initAbout(data, grand) {
     years: `${firstYear} to ${lastYear}`,
     airports: FORMAT.count(airports.length),
     heightMissing: FORMAT.share(heightMissing),
+    minRate: MIN_RATE_KNOWN,
   };
-  d3.selectAll("[data-fact]").text(function () {
+  d3.selectAll("[data-fact]").filter(function () {
+    return this.dataset.fact in facts;
+  }).text(function () {
     return facts[this.dataset.fact];
   });
   d3.select("#eyebrow-text").text(
